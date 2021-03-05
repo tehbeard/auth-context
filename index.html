@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <main id="app"><pre></pre></main>
+    <button type="button" id="login">Login</button>
+    <button type="button" id="logout">Logout</button>
+    <!-- <script type="module" src="window.js"></script> -->
+    <script type="module">
+      import {
+        selectUsername,
+        selectUserId,
+        selectIsAuthenticating,
+      } from "./oauth/selectors.js";
+      import store from "./store.js";
+
+      const cb = () => {
+        console.log("isAuthing", selectIsAuthenticating(store.getState()));
+        if (selectIsAuthenticating(store.getState())) {
+            document.querySelector("pre").innerText = "Authenticating...";
+        } else {
+          document.querySelector("pre").innerText = JSON.stringify({
+            username: selectUsername(store.getState()),
+            id: selectUserId(store.getState()),
+          });
+        }
+      };
+      store.subscribe(cb);
+      cb();
+
+      import { Login, Logout, IsAuthenticating } from "./oauth/actions.js";
+
+      const DelayedLogin = (...args) => dispatch => {
+        dispatch(IsAuthenticating(true));
+        setTimeout(() => dispatch(Login(...args)), 2000);
+      };
+
+      document.querySelector("#logout").addEventListener("click", () => {
+        store.dispatch(Logout());
+      });
+      document.querySelector("#login").addEventListener("click", () => {
+        const access_token =
+          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiZXhwIjo5OTk5OTk5OTk5OTk5fQ.AAwFs9qxoU1z-4xkYOI0f5KnuLjiuAMW-20EYB3I1jk";
+        const id_token =
+          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiSm9obiBEb2UifQ.DjwRE2jZhren2Wt37t5hlVru6Myq4AhpGLiiefF69u8";
+
+        store.dispatch(DelayedLogin(access_token, null, id_token));
+      });
+
+      console.log("STATE", store.getState());
+    </script>
+  </body>
+</html>
