@@ -1,9 +1,9 @@
 import { ClearTokens, createAuthCodeGrantAction, createPasswordGrantAction, createRefreshTokenGrantAction } from "./actions";
 import { selectAccessToken, selectIsAccessTokenExpired } from "./selectors";
 
-import { composeFetch, withHeaders }  from "@tehbeard/compose-fetch";
+import { ComposedFetchFn, ComposedFetchFnFactory, composeFetch }  from "@tehbeard/compose-fetch";
 
-export const createAuthedApi = (oAuthFetch, apiFetch) => (store, client_id, client_secret, scope) => {
+export const createAuthedApi = (oAuthFetch: ComposedFetchFn, apiFetch:ComposedFetchFnFactory) => (store, client_id, client_secret, scope) => {
 
     const refreshAction = createRefreshTokenGrantAction(oAuthFetch)(client_id, client_secret);
     const passwordAction = createPasswordGrantAction(oAuthFetch)(client_id, client_secret,scope)
@@ -16,7 +16,7 @@ export const createAuthedApi = (oAuthFetch, apiFetch) => (store, client_id, clie
         LoginWithPassword: actionDispatch(passwordAction),
         LoginWithCode: actionDispatch(codeGrant),
         Logout: actionDispatch(ClearTokens),
-        authedApiCall: composeFetch( fetch => async (url, init) => {
+        authedApiCall: composeFetch(apiFetch, fetch => async (url, init) => {
             if(selectIsAccessTokenExpired(store.getStore())){
                 await callers.RefreshToken();
             }
@@ -31,7 +31,7 @@ export const createAuthedApi = (oAuthFetch, apiFetch) => (store, client_id, clie
                 //Token was invalid
                 callers.Logout();
             }
-        },apiFetch)
+        })
     };
 
     return callers;
