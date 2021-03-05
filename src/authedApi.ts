@@ -3,7 +3,7 @@ import { selectAccessToken, selectIsAccessTokenExpired } from "./selectors";
 
 import { ComposedFetchFn, ComposedFetchFnFactory, composeFetch }  from "@tehbeard/compose-fetch";
 
-export const createAuthedApi = (oAuthFetch: ComposedFetchFn, apiFetch:ComposedFetchFnFactory) => (store, client_id, client_secret, scope) => {
+export const createAuthedApi = (oAuthFetch: ComposedFetchFn, apiFetch:ComposedFetchFnFactory) => (client_id, client_secret, scope) => store => {
 
     const refreshAction = createRefreshTokenGrantAction(oAuthFetch)(client_id, client_secret);
     const passwordAction = createPasswordGrantAction(oAuthFetch)(client_id, client_secret,scope)
